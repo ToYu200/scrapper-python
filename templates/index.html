@@ -1,0 +1,22 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Веб-скрапер by ToYu200</h1>
+        <form method="post" class="form">
+            <input type="text" name="url" placeholder="https://example.com" required class="input-url">
+            <button type="submit" class="btn-submit">Скрапить</button>
+        </form>
+        <iframe id="preview-iframe" class="iframe-preview"></iframe>
+        <a href="{{ url_for('download_html') }}" class="btn-download">Скачать HTML</a>
+    </div>
+
+    <script>
+        var content = {{ html_content|tojson|safe }};
+        if (content && content !== '') {
+            document.getElementById('preview-iframe').srcdoc = content;
+        }
+    </script>
+</body>
