@@ -1,0 +1,5 @@
+.idea/
+output.html
+rmdir
+__pycache__/
+*.pyc

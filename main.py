@@ -3,9 +3,42 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import os
+import pymysql
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+
+# Настройки подключения к MySQL
+DB_HOST = 'localhost'
+DB_USER = 'root'
+DB_PASSWORD = 'Geefosig123!'
+DB_NAME = 'webscrapper'
+
+def get_db_connection():
+    return pymysql.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+
+def init_db():
+    conn = get_db_connection()
+    with conn:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS scrape_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    url VARCHAR(2048) NOT NULL,
+                    timestamp DATETIME NOT NULL
+                )
+            """)
+        conn.commit()
+
+init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -37,6 +70,16 @@ def index():
             # сохранение HTML в файл
             with open("output.html", "w", encoding="utf-8") as f:
                 f.write(html_content)
+
+            # Сохраняем в базу данных
+            conn = get_db_connection()
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(
+                        "INSERT INTO scrape_history (url, timestamp) VALUES (%s, %s)",
+                        (url, datetime.now())
+                    )
+                conn.commit()
 
         except requests.exceptions.RequestException as e:
             flash(f"Ошибка при запросе URL: {e}")

@@ -1,0 +1,15 @@
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">История запросов</h1>
+        <ul>
+            {% for record in history_records %}
+                <li>{{ record.timestamp }} - <a href="{{ record.url }}" target="_blank">{{ record.url }}</a></li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('index') }}" class="btn-download">Назад</a>
+    </div>
+</body>
