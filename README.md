@@ -14,8 +14,8 @@
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/scrapper-python
+cd scrapper-python
 ```
 
 ### 2. Установка зависимостей
