@@ -10,10 +10,10 @@ app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
 # Настройки подключения к MySQL
-DB_HOST = os.environ.get('DB_HOST', 'localhost')  # Хост базы данных
-DB_USER = os.environ.get('DB_USER', 'root')       # Имя пользователя
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'Geefsoig123!')   # Пароль пользователя
-DB_NAME = os.environ.get('DB_NAME', 'webscrapper')  # Имя базы данных
+DB_HOST = 'localhost'
+DB_USER = 'root'
+DB_PASSWORD = 'Geefosig123!'
+DB_NAME = 'webscrapper'
 
 def get_db_connection():
     return pymysql.connect(
@@ -33,6 +33,14 @@ def init_db():
                 CREATE TABLE IF NOT EXISTS scrape_history (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     url VARCHAR(2048) NOT NULL,
+                    timestamp DATETIME NOT NULL
+                )
+            """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS file_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_path VARCHAR(2048) NOT NULL,
                     timestamp DATETIME NOT NULL
                 )
             """)
@@ -91,6 +99,15 @@ def index():
 def download_html():
     file_path = "output.html"
     if os.path.exists(file_path):
+        # Сохраняем информацию о файле в базу данных
+        conn = get_db_connection()
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO file_history (file_name, file_path, timestamp) VALUES (%s, %s, %s)",
+                    (os.path.basename(file_path), os.path.abspath(file_path), datetime.now())
+                )
+            conn.commit()
         return send_file(file_path, as_attachment=True)
     else:
         flash("Файл не найден.")
