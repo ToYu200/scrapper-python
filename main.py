@@ -29,10 +29,20 @@ def init_db():
     conn = get_db_connection()
     with conn:
         with conn.cursor() as cursor:
+            # Создание таблицы для истории запросов
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS scrape_history (
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     url VARCHAR(2048) NOT NULL,
+                    timestamp DATETIME NOT NULL
+                )
+            """)
+            # Создание таблицы для истории файлов
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS file_history (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_path VARCHAR(2048) NOT NULL,
                     timestamp DATETIME NOT NULL
                 )
             """)
@@ -91,6 +101,15 @@ def index():
 def download_html():
     file_path = "output.html"
     if os.path.exists(file_path):
+        # Сохраняем информацию о файле в базу данных
+        conn = get_db_connection()
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO file_history (file_name, file_path, timestamp) VALUES (%s, %s, %s)",
+                    (os.path.basename(file_path), os.path.abspath(file_path), datetime.now())
+                )
+            conn.commit()
         return send_file(file_path, as_attachment=True)
     else:
         flash("Файл не найден.")
